@@ -249,7 +249,7 @@ def add_song_sidebar():
             "tags": tags,
         }
         if title and artist:
-            normalized = normalize_song(song)
+            normalized = normalize_song(song, st.session_state.profile)
             all_songs = st.session_state.songs[:]
             all_songs.append(normalized)
             st.session_state.songs = all_songs

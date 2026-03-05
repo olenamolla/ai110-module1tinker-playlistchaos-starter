@@ -31,7 +31,7 @@ def normalize_genre(genre: str) -> str:
     return genre.lower().strip()
 
 
-def normalize_song(raw: Song) -> Song:
+def normalize_song(raw: Song, profile: Dict[str, object] = {}) -> Song:
     """Return a normalized song dict with expected keys."""
     title = normalize_title(str(raw.get("title", "")))
     artist = normalize_artist(str(raw.get("artist", "")))
@@ -43,6 +43,16 @@ def normalize_song(raw: Song) -> Song:
             energy = int(energy)
         except ValueError:
             energy = 0
+
+    hype_keywords = ["rock", "punk", "party"]
+    chill_keywords = ["lofi", "ambient", "sleep"]
+    hype_min_energy = int(str(profile.get("hype_min_energy", 7)))
+    chill_max_energy = int(str(profile.get("chill_max_energy", 3)))
+
+    if any(k in genre for k in hype_keywords):
+        energy = max(energy, hype_min_energy)
+    elif any(k in genre for k in chill_keywords):
+        energy = min(energy, chill_max_energy)
 
     tags = raw.get("tags", [])
     if isinstance(tags, str):
@@ -89,7 +99,7 @@ def build_playlists(songs: List[Song], profile: Dict[str, object]) -> PlaylistMa
     }
 
     for song in songs:
-        normalized = normalize_song(song)
+        normalized = normalize_song(song, profile)
         mood = classify_song(normalized, profile)
         normalized["mood"] = mood
         playlists[mood].append(normalized)
